@@ -47,6 +47,7 @@ module OsmImport
     end
 
     def face(way, material=nil)
+        #    print "FACCIA\n"    
 		vertices = []
         way.nodes.each do |node|
             node = $db.get_node(node)
@@ -67,4 +68,31 @@ module OsmImport
 			end
 		end
 	end
+  		
+    def volume(way, height, material=nil)
+        #print height, " ALTEZZA\n"
+		vertices = []
+        way.nodes.each do |node|
+            node = $db.get_node(node)
+            point = Sketchup.active_model.latlong_to_point [Float(node.lon), Float(node.lat)]
+            if !point.nil?
+                vertices << point
+            end
+        end
+        face = $entities.add_face vertices
+		if !face.nil?
+			# hide face edges
+			for edge in face.edges
+				edge.hidden = true
+			end
+			if !material.nil?
+				face.material = material
+				face.back_material = material
+			end
+		end	
+		h = Float(height)*100/2.54
+		h = -h if face.normal.dot(Z_AXIS) < 0.0
+    face.pushpull h		
+	end
+
 end
